@@ -10,6 +10,26 @@ using std::string;
 using std::to_string;
 using std::vector;
 
+// anonyomous namespace for some utility functions that only are needed in this file
+namespace {
+string ReadValueFromStat(string statfile, string stat_key) {
+  string line;
+  string key;
+  string value;
+  std::ifstream filestream(statfile);
+  if (filestream.is_open()) {
+    while (std::getline(filestream, line)) {
+      std::istringstream linestream(line);
+      linestream >> key >> value;
+      if (key == stat_key) {
+        return value;
+      }
+    }
+  }
+  return value;
+}
+}
+
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
   string line;
@@ -89,10 +109,14 @@ long LinuxParser::IdleJiffies() { return 0; }
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
 // TODO: Read and return the total number of processes
-int LinuxParser::TotalProcesses() { return 0; }
+int LinuxParser::TotalProcesses() { 
+  return std::stoi(ReadValueFromStat(kProcDirectory + kStatFilename, "processes"));
+}
 
 // TODO: Read and return the number of running processes
-int LinuxParser::RunningProcesses() { return 0; }
+int LinuxParser::RunningProcesses() {
+  return std::stoi(ReadValueFromStat(kProcDirectory + kStatFilename, "procs_running"));
+}
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
