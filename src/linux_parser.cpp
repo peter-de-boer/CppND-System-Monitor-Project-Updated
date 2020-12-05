@@ -111,7 +111,7 @@ float LinuxParser::MemoryUtilization() {
       }
     }
   }
-  return (float) (memtotal-memfree) / (float) memtotal;
+  return allKeysFound ? (float) (memtotal-memfree) / (float) memtotal : 0.0;
 }
 
 // TODO: Read and return the system uptime
