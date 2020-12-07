@@ -10,14 +10,20 @@ Processor::Processor() {
   Processor::GetCpuValues(prev_values);
 }
 
-void Processor::GetCpuValues(std::vector<long> &values) {
+void Processor::GetCpuValues(std::vector<std::vector<long>> &values) {
   std::string name;
-  std::string line = LinuxParser::CpuUtilization()[0];
-  std::istringstream linestream(line);
-  // first element is a name, the remainig elements are long values
-  linestream >> name; 
-  long ticks;
-  while (linestream >> ticks) {values.push_back(ticks);}
+  std::vector<std::string> lines = LinuxParser::CpuUtilization();
+  
+  for (std::string line: lines) {
+    std::istringstream linestream(line);
+    std::vector<long> values_one_line;
+    // first element is a name, the remaining elements are long values
+    linestream >> name; 
+    long ticks;
+    while (linestream >> ticks) {values_one_line.push_back(ticks);}
+    values.push_back(values_one_line);
+  }
+  
 }  
 
 // TODO: Return the aggregate CPU utilization
@@ -44,25 +50,30 @@ idled = Idle - PrevIdle
 
 CPU_Percentage = (totald - idled)/totald
 */ 
-float Processor::Utilization() { 
+std::vector<float> Processor::Utilization() { 
   
-  std::vector<long> values;
+  std::vector<float> utilization;
+  
+  std::vector<std::vector<long>> values;
   Processor::GetCpuValues(values);
+  
+  for(unsigned int i= 0; i < values.size(); i++) {
     
-  long Idle = values[3] + values[4];
-  long PrevIdle = prev_values[3] + prev_values[4];
+    long Idle = values[i][3] + values[i][4];
+    long PrevIdle = prev_values[i][3] + prev_values[i][4];
   
-  long NonIdle = values[0] + values[1] + values[2] + values[5] + values[6] + values[7];
-  long PrevNonIdle = prev_values[0] + prev_values[1] + prev_values[2] + prev_values[5] + prev_values[6] + prev_values[7];
+    long NonIdle = values[i][0] + values[i][1] + values[i][2] + values[i][5] + values[i][6] + values[i][7];
+    long PrevNonIdle = prev_values[i][0] + prev_values[i][1] + prev_values[i][2] + prev_values[i][5] + prev_values[i][6] + prev_values[i][7];
   
-  long Total = Idle + NonIdle;
-  long PrevTotal = PrevIdle + PrevNonIdle;
+    long Total = Idle + NonIdle;
+    long PrevTotal = PrevIdle + PrevNonIdle;
   
-  long totald = Total - PrevTotal;
-  long idled = Idle - PrevIdle;
+    long totald = Total - PrevTotal;
+    long idled = Idle - PrevIdle;
 
-  float utilization = totald == 0 ? 0.0 : (float) (totald - idled)/ (float) totald;
-  
+    float util = totald == 0 ? 0.0 : (float) (totald - idled)/ (float) totald;
+    utilization.push_back(util);
+  }
   // save the current values for the following time step;
   prev_values = values;
 
