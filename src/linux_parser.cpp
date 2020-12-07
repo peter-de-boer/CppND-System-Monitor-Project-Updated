@@ -145,11 +145,14 @@ long LinuxParser::IdleJiffies() { return 0; }
 // ? remaining elements are utilizations for the individual processors
 vector<string> LinuxParser::CpuUtilization() { 
   string line{""};
+  vector<string> cpu_lines;
   std::ifstream filestream(kProcDirectory + kStatFilename);
   if (filestream.is_open()) {
-    std::getline(filestream, line);
+    while (std::getline(filestream, line) && line.rfind("cpu", 0) == 0) {
+      cpu_lines.push_back(line);
+    }
   }
-  return vector<string> {line};
+  return cpu_lines;
 }
 
 
