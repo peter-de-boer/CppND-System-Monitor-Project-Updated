@@ -31,15 +31,23 @@ std::string NCursesDisplay::ProgressBar(float percent) {
 void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
   int row{0};
   std::vector<float> cpu_util = system.Cpu().Utilization();
-
+  char name[] = "CPU: ";
+  int count = 0;
+  
   mvwprintw(window, ++row, 2, ("OS: " + system.OperatingSystem()).c_str());
   mvwprintw(window, ++row, 2, ("Kernel: " + system.Kernel()).c_str());
+  // iterate over the cpu_util vector
+  // the first element is the aggregated cpu utilization
+  // the remaining elements are the utilizations of the individual processors.
   for(float util: cpu_util) {
-    mvwprintw(window, ++row, 2, "CPU: ");
+    mvwprintw(window, ++row, 2, name);
     wattron(window, COLOR_PAIR(1));
     mvwprintw(window, row, 10, "");
     wprintw(window, ProgressBar(util).c_str());
     wattroff(window, COLOR_PAIR(1));
+    
+    sprintf(name, "%3d: ", count++);
+   
   }
   mvwprintw(window, ++row, 2, "Memory: ");
   wattron(window, COLOR_PAIR(1));
