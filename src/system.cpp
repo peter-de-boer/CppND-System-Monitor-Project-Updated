@@ -25,12 +25,18 @@ int System::ProcessorCount() {
   return processor_count_;
 }
 
-// TODO: Return the system's CPU
+// DONE: Return the system's CPU
 // Why does this work even without having a System constructor with a cpu_ definition? cpu_ is just an empty object?;
 Processor& System::Cpu() { return cpu_; }
 
-// TODO: Return a container composed of the system's processes
-vector<Process>& System::Processes() { return processes_; }
+// DONE: Return a container composed of the system's processes
+vector<Process>& System::Processes() { 
+  processes_ = {};
+  for (int pid : LinuxParser::Pids()) {
+    processes_.push_back(Process(pid));
+  }
+  return processes_; 
+}
 
 // DONE: Return the system's kernel identifier (string)
 std::string System::Kernel() { return LinuxParser::Kernel(); }
