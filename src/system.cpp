@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <thread>
 
 #include "process.h"
 #include "processor.h"
@@ -14,7 +15,18 @@ using std::size_t;
 using std::string;
 using std::vector;
 
+
+System::System() : processor_count_(std::thread::hardware_concurrency()) {
+  cpu_ = Processor();
+  // processes_ = ??;
+}
+
+int System::ProcessorCount() {
+  return processor_count_;
+}
+
 // TODO: Return the system's CPU
+// Why does this work even without having a System constructor with a cpu_ definition? cpu_ is just an empty object?;
 Processor& System::Cpu() { return cpu_; }
 
 // TODO: Return a container composed of the system's processes
