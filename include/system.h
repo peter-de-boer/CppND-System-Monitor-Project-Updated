@@ -6,6 +6,7 @@
 
 #include "process.h"
 #include "processor.h"
+#include <thread>
 
 class System {
  public:
@@ -17,6 +18,7 @@ class System {
   int RunningProcesses();             // DONE: See src/system.cpp
   std::string Kernel();               // DONE: See src/system.cpp
   std::string OperatingSystem();      // DONE: See src/system.cpp
+  const int processor_count = std::thread::hardware_concurrency();
 
   // TODO: Define any necessary private members
  private:
