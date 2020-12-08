@@ -19,7 +19,12 @@ Process::Process(int pid) {
 int Process::Pid() { return pid_; }
 
 // DONE: Return this process's CPU utilization
-float Process::CpuUtilization() const { return  LinuxParser::CpuUtilization(pid_) ; }
+float Process::CpuUtilization() const { 
+  long total_time = LinuxParser::TotalTime(pid_);
+  long uptime = LinuxParser::UpTime(pid_);
+  
+  return  LinuxParser::CpuUtilization(pid_) ; 
+}
 
 // DONE: Return the command that generated this process
 string Process::Command() { return LinuxParser::Command(pid_); }

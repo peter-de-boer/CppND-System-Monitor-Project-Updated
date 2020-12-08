@@ -119,6 +119,18 @@ float LinuxParser::MemoryUtilization() {
   return allKeysFound ? (float) (memtotal-memfree) / (float) memtotal : 0.0;
 }
 
+float LinuxParser::UpTimeF() { 
+  string uptime{"0.0"};
+  string line;
+  std::ifstream stream(kProcDirectory + kUptimeFilename);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    linestream >> uptime;
+  }
+  return std::stof(uptime);
+}
+
 // DONE: Read and return the system uptime
 long LinuxParser::UpTime() { 
   string uptime{"0.0"};
@@ -233,6 +245,31 @@ long LinuxParser::UpTime(int pid) {
     seconds = LinuxParser::UpTime() - std::stol(v) / sysconf(_SC_CLK_TCK) ;
   }
   return seconds;
+}
+
+long LinuxParser::TotalTime(int pid) {  
+  std::ifstream stream(PidDir(pid) + kStatFilename);
+  long total_time{0};
+  if (stream.is_open()) {
+    string line;
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    string v, utime, stime, cutime, cstime;
+ /*
+ /proc/[PID]/stat
+#14 utime - CPU time spent in user code, measured in clock ticks
+#15 stime - CPU time spent in kernel code, measured in clock ticks
+#16 cutime - Waited-for children's CPU time spent in user code (in clock ticks)
+#17 cstime - Waited-for children's CPU time spent in kernel code (in clock ticks)
+#22 starttime - Time when the process started, measured in clock ticks
+*/
+    for (int i = 0; i < 13; i++) {
+      linestream >> v;
+    }
+    linestream >> utime >> stime >> cutime >> cstime;
+    total_time = std::stol(utime) + std::stol(stime) + std::stol(cutime) + std::stol(cstime);
+  }
+  return total_time;
 }
 
 float LinuxParser::CpuUtilization(int pid) {  
