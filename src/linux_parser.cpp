@@ -12,21 +12,25 @@ using std::vector;
 
 // anonyomous namespace for some utility functions that only are needed in this file
 namespace {
-string ReadValueFromStat(string statfile, string stat_key) {
+string ReadValueFromFile(string file, string req_key) {
   string line;
   string key;
   string value;
-  std::ifstream filestream(statfile);
+  std::ifstream filestream(file);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
       linestream >> key >> value;
-      if (key == stat_key) {
+      if (key == req_key) {
         return value;
       }
     }
   }
   return value;
+}
+  
+string PidDir(int pid) {
+  return LinuxParser::kProcDirectory + "/" + std::to_string(pid);
 }
 }
 
@@ -158,12 +162,12 @@ vector<string> LinuxParser::CpuUtilization() {
 
 // DONE: Read and return the total number of processes
 int LinuxParser::TotalProcesses() { 
-  return std::stoi(ReadValueFromStat(kProcDirectory + kStatFilename, "processes"));
+  return std::stoi(ReadValueFromFile(kProcDirectory + kStatFilename, "processes"));
 }
 
 // DONE: Read and return the number of running processes
 int LinuxParser::RunningProcesses() {
-  return std::stoi(ReadValueFromStat(kProcDirectory + kStatFilename, "procs_running"));
+  return std::stoi(ReadValueFromFile(kProcDirectory + kStatFilename, "procs_running"));
 }
 
 // TODO: Read and return the command associated with a process
@@ -180,7 +184,23 @@ string LinuxParser::Uid(int pid[[maybe_unused]]) { return string(); }
 
 // TODO: Read and return the user associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::User(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::User(int pid) { 
+  string uid = ReadValueFromFile(PidDir(pid) + kStatusFilename, "Uid:"); 
+  string line;
+  string user, x, userid;
+  std::ifstream stream(kPasswordPath);
+  if (stream.is_open()) {
+    while (std::getline(stream, line)) {
+      std::istringstream linestream { line };
+      std::getline(linestream, user, ':');
+      std::getline(linestream, x, ':');
+      std::getline(linestream, userid, ':');
+      //linestream >> user >> x >> userid;
+      if (userid == uid) {return user;}
+    }
+  }
+  return "user_not_found";
+}
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
