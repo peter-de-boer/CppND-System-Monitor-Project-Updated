@@ -234,3 +234,37 @@ long LinuxParser::UpTime(int pid) {
   }
   return seconds;
 }
+
+float LinuxParser::CpuUtilization(int pid) {  
+  std::ifstream stream(PidDir(pid) + kStatFilename);
+  float util{0.0};
+  if (stream.is_open()) {
+    long seconds{0};
+    string line;
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    string v, utime, stime, cutime, cstime, starttime;
+ /*
+ /proc/[PID]/stat
+#14 utime - CPU time spent in user code, measured in clock ticks
+#15 stime - CPU time spent in kernel code, measured in clock ticks
+#16 cutime - Waited-for children's CPU time spent in user code (in clock ticks)
+#17 cstime - Waited-for children's CPU time spent in kernel code (in clock ticks)
+#22 starttime - Time when the process started, measured in clock ticks
+*/
+    for (int i = 0; i < 13; i++) {
+      linestream >> v;
+    }
+    linestream >> utime >> stime >> cutime >> cstime;
+    for (int i = 17 ; i < 21 ; i++) {
+      linestream >> v;
+    }
+    linestream >> starttime;
+    long total_time = std::stol(utime) + std::stol(stime) + std::stol(cutime) + std::stol(cstime);
+    // uptime of this process is the uptime of system minus the starttime of this process
+    seconds = LinuxParser::UpTime() - std::stol(starttime) / sysconf(_SC_CLK_TCK) ;
+    util = (float) (total_time / sysconf(_SC_CLK_TCK)) / (float) seconds;
+
+  }
+  return util;
+}
