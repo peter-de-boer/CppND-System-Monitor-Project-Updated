@@ -133,15 +133,7 @@ float LinuxParser::UpTimeF() {
 
 // DONE: Read and return the system uptime
 long LinuxParser::UpTime() { 
-  string uptime{"0.0"};
-  string line;
-  std::ifstream stream(kProcDirectory + kUptimeFilename);
-  if (stream.is_open()) {
-    std::getline(stream, line);
-    std::istringstream linestream(line);
-    linestream >> uptime;
-  }
-  return std::lround(std::stof(uptime));
+  return std::lround(LinuxParser::UpTimeF());
 }
 
 // TODO: Read and return the number of jiffies for the system
@@ -247,7 +239,7 @@ long LinuxParser::UpTime(int pid) {
   return seconds;
 }
 
-long LinuxParser::TotalTime(int pid) {  
+float LinuxParser::TotalTime(int pid) {  
   std::ifstream stream(PidDir(pid) + kStatFilename);
   long total_time{0};
   if (stream.is_open()) {
@@ -269,7 +261,29 @@ long LinuxParser::TotalTime(int pid) {
     linestream >> utime >> stime >> cutime >> cstime;
     total_time = std::stol(utime) + std::stol(stime) + std::stol(cutime) + std::stol(cstime);
   }
-  return total_time;
+  return (float) total_time / (float) sysconf(_SC_CLK_TCK);
+}
+
+float LinuxParser::StartTime(int pid) {
+  float starttimef;
+  std::ifstream stream(PidDir(pid) + kStatFilename);
+  if (stream.is_open()) {
+    string line;
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    string v, starttime;
+ /*
+ /proc/[PID]/stat
+#22 starttime - Time when the process started, measured in clock ticks
+*/
+
+    for (int i = 0 ; i < 21 ; i++) {
+      linestream >> v;
+    }
+    linestream >> starttime;
+    starttimef= std::stol(starttime) / sysconf(_SC_CLK_TCK) ;  
+  }
+  return starttimef;
 }
 
 float LinuxParser::CpuUtilization(int pid) {  
