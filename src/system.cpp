@@ -93,4 +93,4 @@ int System::RunningProcesses() { return LinuxParser::RunningProcesses(); }
 int System::TotalProcesses() { return LinuxParser::TotalProcesses(); }
 
 // Return the number of seconds since the system started running
-long int System::UpTime() { return LinuxParser::UpTime(); }
+float System::UpTime() { return LinuxParser::UpTime(); }

@@ -117,7 +117,7 @@ float LinuxParser::MemoryUtilization() {
   return allKeysFound ? (float)(memtotal - memfree) / (float)memtotal : 0.0;
 }
 
-float LinuxParser::UpTimeF() {
+float LinuxParser::UpTime() {
   string uptime{"0.0"};
   string line;
   std::ifstream stream(kProcDirectory + kUptimeFilename);
@@ -129,7 +129,6 @@ float LinuxParser::UpTimeF() {
   return std::stof(uptime);
 }
 
-long LinuxParser::UpTime() { return std::lround(LinuxParser::UpTimeF()); }
 
 // Read and return CPU utilization
 // The first element of the vector is the aggregated cpu utilization
@@ -204,8 +203,8 @@ string LinuxParser::User(int pid) {
 }
 
 // Read and return the uptime of a process
-long LinuxParser::UpTime(int pid) {
-  long seconds{0};
+float LinuxParser::UpTime(int pid) {
+  float seconds{0.0};
   std::ifstream stream(PidDir(pid) + kStatFilename);
   if (stream.is_open()) {
     string line;
@@ -217,7 +216,7 @@ long LinuxParser::UpTime(int pid) {
     }
     // uptime of this process is the uptime of system minus the starttime of
     // this process
-    seconds = LinuxParser::UpTime() - std::stol(v) / sysconf(_SC_CLK_TCK);
+    seconds = LinuxParser::UpTime() - std::stof(v) / (float) sysconf(_SC_CLK_TCK);
   }
   return seconds;
 }
@@ -277,7 +276,7 @@ float LinuxParser::CpuUtilization(int pid) {
   std::ifstream stream(PidDir(pid) + kStatFilename);
   float util{0.0};
   if (stream.is_open()) {
-    long seconds{0};
+    float seconds{0};
     string line;
     std::getline(stream, line);
     std::istringstream linestream(line);
@@ -300,13 +299,13 @@ float LinuxParser::CpuUtilization(int pid) {
       linestream >> v;
     }
     linestream >> starttime;
-    long total_time = std::stol(utime) + std::stol(stime) + std::stol(cutime) +
-                      std::stol(cstime);
+    float total_time = std::stof(utime) + std::stof(stime) + std::stof(cutime) +
+                      std::stof(cstime);
     // uptime of this process is the uptime of system minus the starttime of
     // this process
     seconds =
-        LinuxParser::UpTime() - std::stol(starttime) / sysconf(_SC_CLK_TCK);
-    util = (float)(total_time / sysconf(_SC_CLK_TCK)) / (float)seconds;
+        LinuxParser::UpTime() - std::stof(starttime) / (float) sysconf(_SC_CLK_TCK);
+    util = (total_time / (float) sysconf(_SC_CLK_TCK)) / seconds;
   }
   return util;
 }

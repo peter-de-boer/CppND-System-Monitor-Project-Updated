@@ -16,7 +16,7 @@ Process::Process(int pid) {
   // initialize the utilization and the total_time and uptime for
   // future utilizazion updates
   prev_total_time_ = LinuxParser::TotalTime(pid_);
-  prev_uptime_ = LinuxParser::UpTimeF();
+  prev_uptime_ = LinuxParser::UpTime();
   float starttime = LinuxParser::StartTime(pid_);
   // if pid really just started set util to 0.0
   util_ = prev_uptime_ - starttime < 0.5 ? 0.0 : prev_total_time_ /
@@ -29,7 +29,7 @@ int Process::Pid() const { return pid_; }
 // Calculate the utilization in the most recent time window
 void Process::UpdateCpuUtilization() {
   float total_time = LinuxParser::TotalTime(pid_);
-  float uptime = LinuxParser::UpTimeF();
+  float uptime = LinuxParser::UpTime();
   // only update util if sufficiently time has passed;
   if (uptime - prev_uptime_ > 0.5) {
     util_ = (total_time - prev_total_time_) / (uptime - prev_uptime_);
@@ -53,7 +53,7 @@ string Process::Ram() { return LinuxParser::Ram(pid_); }
 string Process::User() { return LinuxParser::User(pid_); }
 
 // Return the age of this process (in seconds)
-long int Process::UpTime() { return LinuxParser::UpTime(pid_); }
+float Process::UpTime() { return LinuxParser::UpTime(pid_); }
 
 // Overload the "less than" comparison operator for Process objects
 bool Process::operator<(Process const& a) const {

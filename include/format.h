@@ -4,7 +4,7 @@
 #include <string>
 
 namespace Format {
-std::string ElapsedTime(long times);
+std::string ElapsedTime(float times);
 };
 
 #endif
