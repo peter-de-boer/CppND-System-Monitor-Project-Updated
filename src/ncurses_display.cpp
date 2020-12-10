@@ -33,21 +33,20 @@ void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
   std::vector<float> cpu_util = system.Cpu().Utilization();
   char name[] = "CPU: ";
   int count = 0;
-  
+
   mvwprintw(window, ++row, 2, ("OS: " + system.OperatingSystem()).c_str());
   mvwprintw(window, ++row, 2, ("Kernel: " + system.Kernel()).c_str());
   // iterate over the cpu_util vector
   // the first element is the aggregated cpu utilization
   // the remaining elements are the utilizations of the individual processors.
-  for(float util: cpu_util) {
+  for (float util : cpu_util) {
     mvwprintw(window, ++row, 2, name);
     wattron(window, COLOR_PAIR(1));
     mvwprintw(window, row, 10, "");
     wprintw(window, ProgressBar(util).c_str());
     wattroff(window, COLOR_PAIR(1));
-    
+
     sprintf(name, "%3d: ", count++);
-   
   }
   mvwprintw(window, ++row, 2, "Memory: ");
   wattron(window, COLOR_PAIR(1));
@@ -101,7 +100,7 @@ void NCursesDisplay::Display(System& system, int n) {
   start_color();  // enable color
 
   int x_max{getmaxx(stdscr)};
-  WINDOW* system_window = newwin(9+system.ProcessorCount(), x_max - 1, 0, 0);
+  WINDOW* system_window = newwin(9 + system.ProcessorCount(), x_max - 1, 0, 0);
   WINDOW* process_window =
       newwin(3 + n, x_max - 1, system_window->_maxy + 1, 0);
 

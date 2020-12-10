@@ -1,7 +1,7 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 
-#include <vector> 
+#include <vector>
 
 class Processor {
  public:
