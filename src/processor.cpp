@@ -5,6 +5,7 @@
 
 Processor::Processor() { Processor::GetCpuValues(prev_values); }
 
+// read the parameters that will be used in the cpu utilization calculation
 void Processor::GetCpuValues(std::vector<std::vector<long>> &values) {
   std::string name;
   std::vector<std::string> lines = LinuxParser::CpuUtilization();
@@ -22,7 +23,7 @@ void Processor::GetCpuValues(std::vector<std::vector<long>> &values) {
   }
 }
 
-// DONE: Return the aggregate CPU utilization
+// Return the aggregate CPU utilization
 /*
 From
 https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux:

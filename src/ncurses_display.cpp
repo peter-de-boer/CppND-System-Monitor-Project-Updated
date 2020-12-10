@@ -100,11 +100,14 @@ void NCursesDisplay::Display(System& system, int n) {
   start_color();  // enable color
 
   int x_max{getmaxx(stdscr)};
+  // make system window large enough so that there is space for a line for each 
+  // individual cpu
   WINDOW* system_window = newwin(9 + system.ProcessorCount(), x_max - 1, 0, 0);
   WINDOW* process_window =
       newwin(3 + n, x_max - 1, system_window->_maxy + 1, 0);
 
   while (1) {
+    // clean the windows before writing new stuff
     werase(process_window);
     werase(system_window);
     init_pair(1, COLOR_BLUE, COLOR_BLACK);

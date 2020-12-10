@@ -11,9 +11,11 @@ using std::string;
 using std::to_string;
 using std::vector;
 
-// anonyomous namespace for some utility functions that only are needed in this
-// file
+// anonyomous namespace for utility functions that
+// are only needed in this file
 namespace {
+// read key value pairs from file
+// return the value for the first found key that matches req_key
 string ReadValueFromFile(string file, string req_key) {
   string line;
   string key;
@@ -36,7 +38,6 @@ string PidDir(int pid) {
 }
 }
 
-// DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
   string line;
   string key;
@@ -59,7 +60,6 @@ string LinuxParser::OperatingSystem() {
   return value;
 }
 
-// DONE: An example of how to read data from the filesystem
 string LinuxParser::Kernel() {
   string os, kernel, version;
   string line;
@@ -72,7 +72,6 @@ string LinuxParser::Kernel() {
   return kernel;
 }
 
-// BONUS: Update this to use std::filesystem
 vector<int> LinuxParser::Pids() {
   vector<int> pids;
   DIR* directory = opendir(kProcDirectory.c_str());
@@ -92,8 +91,7 @@ vector<int> LinuxParser::Pids() {
   return pids;
 }
 
-// DONE: Read and return the system memory utilization
-// utilization is defined as:
+// return utilization, defined as:
 // used memory / total memory = (total memory - free memory) / total memory
 float LinuxParser::MemoryUtilization() {
   string line;
@@ -131,12 +129,11 @@ float LinuxParser::UpTimeF() {
   return std::stof(uptime);
 }
 
-// DONE: Read and return the system uptime
 long LinuxParser::UpTime() { return std::lround(LinuxParser::UpTimeF()); }
 
-// DONE: Read and return CPU utilization
-// ? element 0 is aggregated cpu utilization
-// ? remaining elements are utilizations for the individual processors
+// Read and return CPU utilization
+// The first element of the vector is the aggregated cpu utilization
+// The remaining elements are utilizations for the individual processors
 vector<string> LinuxParser::CpuUtilization() {
   string line{""};
   vector<string> cpu_lines;
@@ -149,20 +146,19 @@ vector<string> LinuxParser::CpuUtilization() {
   return cpu_lines;
 }
 
-// DONE: Read and return the total number of processes
+// Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
   return std::stoi(
       ReadValueFromFile(kProcDirectory + kStatFilename, "processes"));
 }
 
-// DONE: Read and return the number of running processes
+// Read and return the number of running processes
 int LinuxParser::RunningProcesses() {
   return std::stoi(
       ReadValueFromFile(kProcDirectory + kStatFilename, "procs_running"));
 }
 
-// DONE: Read and return the command associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
+// Read and return the command associated with a process
 string LinuxParser::Command(int pid) {
   std::ifstream filestream(PidDir(pid) + kCmdlineFilename);
   string line;
@@ -172,8 +168,7 @@ string LinuxParser::Command(int pid) {
   return line;
 }
 
-// DONE: Read and return the memory used by a process
-// REMOVE: [[maybe_unused]] once you define the function
+// Read and return the memory used by a process
 string LinuxParser::Ram(int pid) {
   long ram_kb =
       std::stol(ReadValueFromFile(PidDir(pid) + kStatusFilename, "VmSize:"));
@@ -181,16 +176,16 @@ string LinuxParser::Ram(int pid) {
   return to_string(ram_mb);
 }
 
-// DONE: Read and return the user ID associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
+// Read and return the user ID associated with a process
 string LinuxParser::Uid(int pid) {
   return ReadValueFromFile(PidDir(pid) + kStatusFilename, "Uid:");
 }
 
-// DONE: Read and return the user associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
+// Read and return the user associated with a process
 string LinuxParser::User(int pid) {
+  // first find the uid
   string uid = LinuxParser::Uid(pid);
+  // now find the user name corresponding to the uid
   string line;
   string user, x, userid;
   std::ifstream stream(kPasswordPath);
@@ -200,7 +195,6 @@ string LinuxParser::User(int pid) {
       std::getline(linestream, user, ':');
       std::getline(linestream, x, ':');
       std::getline(linestream, userid, ':');
-      // linestream >> user >> x >> userid;
       if (userid == uid) {
         return user;
       }
@@ -209,8 +203,7 @@ string LinuxParser::User(int pid) {
   return "user_not_found";
 }
 
-// DONE: Read and return the uptime of a process
-// REMOVE: [[maybe_unused]] once you define the function
+// Read and return the uptime of a process
 long LinuxParser::UpTime(int pid) {
   long seconds{0};
   std::ifstream stream(PidDir(pid) + kStatFilename);
@@ -245,7 +238,6 @@ float LinuxParser::TotalTime(int pid) {
    ticks)
    #17 cstime - Waited-for children's CPU time spent in kernel code (in clock
    ticks)
-   #22 starttime - Time when the process started, measured in clock ticks
    */
     for (int i = 0; i < 13; i++) {
       linestream >> v;
@@ -266,8 +258,10 @@ float LinuxParser::StartTime(int pid) {
     std::istringstream linestream(line);
     string v, starttime;
     /*
-    /proc/[PID]/stat
-   #22 starttime - Time when the process started, measured in clock ticks
+    From 
+      https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
+       /proc/[PID]/stat
+       #22 starttime - Time when the process started, measured in clock ticks
    */
 
     for (int i = 0; i < 21; i++) {
@@ -289,14 +283,14 @@ float LinuxParser::CpuUtilization(int pid) {
     std::istringstream linestream(line);
     string v, utime, stime, cutime, cstime, starttime;
     /*
-    /proc/[PID]/stat
-   #14 utime - CPU time spent in user code, measured in clock ticks
-   #15 stime - CPU time spent in kernel code, measured in clock ticks
-   #16 cutime - Waited-for children's CPU time spent in user code (in clock
-   ticks)
-   #17 cstime - Waited-for children's CPU time spent in kernel code (in clock
-   ticks)
-   #22 starttime - Time when the process started, measured in clock ticks
+    Calculation from 
+      https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
+    The parameter are read from /proc/[PID]/stat:
+     #14 utime - CPU time spent in user code, measured in clock ticks
+     #15 stime - CPU time spent in kernel code, measured in clock ticks
+     #16 cutime - Waited-for children's CPU time spent in user code (in clock ticks)
+     #17 cstime - Waited-for children's CPU time spent in kernel code (in clock ticks)
+     #22 starttime - Time when the process started, measured in clock ticks
    */
     for (int i = 0; i < 13; i++) {
       linestream >> v;
